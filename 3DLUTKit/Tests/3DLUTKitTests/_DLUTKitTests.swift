@@ -1,6 +1,11 @@
 import Testing
+import Foundation
 @testable import _DLUTKit
 
-@Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+@Test func resourcesExist() async throws {
+    let cube = Bundle.module.url(forResource: "Kodachrome 25", withExtension: "cube")
+    #expect(cube != nil)
+    
+    let png = Bundle.module.url(forResource: "fuji_eterna_250d_fuji_3510", withExtension: "png")
+    #expect(png != nil)
 }
