@@ -29,6 +29,10 @@ actor LUTCache {
     func setLUT(_ lut: LUTModel, for url: URL) {
         let lutSize = lut.cubeData.count + MemoryLayout<URL>.size + lut.title.utf8.count + lut.description.utf8.count + MemoryLayout<Float>.size * 2
         
+        guard lutSize <= maxSize else {
+            return
+        }
+        
         while totalSize + lutSize > maxSize || cache.count >= maxCount, !accessOrder.isEmpty {
             let oldest = accessOrder.removeFirst()
             if let oldLUT = cache.removeValue(forKey: oldest) {

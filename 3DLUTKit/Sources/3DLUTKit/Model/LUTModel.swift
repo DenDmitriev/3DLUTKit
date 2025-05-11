@@ -9,7 +9,9 @@ import Foundation
 import CoreGraphics
 import CoreImage
 
+/// Модель, представляющая 3D LUT (Look-Up Table) для применения цветовых фильтров.
 public struct LUTModel: Identifiable, Hashable, Sendable {
+    /// URL файла, из которого создан LUT.
     public let url: URL
     public let title: String
     public let description: String
@@ -53,5 +55,17 @@ extension LUTModel {
 }
 
 public extension LUTModel {
-    static let preview: LUTModel = try! .init(url: Bundle.module.url(forResource: "Kodachrome 25", withExtension: "cube")!)
+    static let previewCube: LUTModel = {
+        guard let url = Bundle.module.url(forResource: "Kodachrome 25", withExtension: "cube") else {
+            fatalError("Kodachrome 25.cube not found in bundle")
+        }
+        return try! .init(url: url)
+    }()
+    
+    static let previewPng: LUTModel = {
+        guard let url = Bundle.module.url(forResource: "teal_orange_plus_contrast", withExtension: "png") else {
+            fatalError("teal_orange_plus_contrast.png not found in bundle")
+        }
+        return try! .init(url: url)
+    }()
 }

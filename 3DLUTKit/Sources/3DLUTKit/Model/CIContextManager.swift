@@ -7,22 +7,20 @@
 
 import CoreImage
 
-/// Потокобезопасный контейнер для CIContext
-///
-/// Будет управлять единственным экземпляром CIContext и предоставлять потокобезопасный доступ к нему.
-class CIContextManager: @unchecked Sendable {
+extension CIContext: @unchecked @retroactive Sendable {}
+
+final class CIContextManager: Sendable {
     static let shared = CIContextManager()
-    let context: CIContext
+    private let context: CIContext
+    private let queue = DispatchQueue(label: "com.3DLUTKit.CIContextManager", attributes: .concurrent)
 
     private init() {
         self.context = CIContext(options: [.workingColorSpace: NSNull()])
     }
 
-    func createCGImage(_ image: CIImage, from rect: CGRect) -> CGImage? {
-        context.createCGImage(image, from: rect)
-    }
-    
-    func clearCache() {
-        context.clearCaches()
+    func withContext<T>(_ block: (CIContext) throws -> T) rethrows -> T {
+        try queue.sync {
+            try block(context)
+        }
     }
 }

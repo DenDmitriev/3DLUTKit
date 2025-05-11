@@ -13,6 +13,10 @@ extension CIFilter {
             throw LUTError.invalidDataSize(expected: lut.dataSize, actual: lut.cubeData.count)
         }
         
+        guard let _ = CIFilter(name: "CIColorCubeWithColorSpace") else {
+            throw LUTError.filterCreationFailed
+        }
+        
         self.init(name: "CIColorCubeWithColorSpace")!
         setValue(lut.dimension, forKey: "inputCubeDimension")
         setValue(lut.cubeData, forKey: "inputCubeData")

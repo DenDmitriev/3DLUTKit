@@ -55,7 +55,7 @@ struct CUBEUtil: Lookupable {
         }
         
         // Проверяем dimension и выделяем память
-        guard let dimension else {
+        guard let dimension, dimension > 0, dimension <= 256 else {
             throw LUTError.missingDimension
         }
         let expectedSize = dimension * dimension * dimension * 3
@@ -66,7 +66,7 @@ struct CUBEUtil: Lookupable {
         for line in lines[firstDataLineIndex...] {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             let components = trimmed.split(separator: " ").compactMap { Float($0) }
-            if components.count == 3 {
+            if components.count == 3, components.allSatisfy({ $0.isFinite }) {
                 values.append(contentsOf: components)
             }
         }
@@ -77,7 +77,6 @@ struct CUBEUtil: Lookupable {
         }
         
         if values.count > expectedSize {
-            print("⚠️ Предупреждение: LUT содержит лишние данные. Обрезаем...")
             values = Array(values.prefix(expectedSize))
         }
         
@@ -91,6 +90,10 @@ struct CUBEUtil: Lookupable {
         
         let lutData = Data(bytes: rgbaValues, count: rgbaValues.count * MemoryLayout<Float>.size)
         
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) else {
+            throw LUTError.colorSpaceNotSupported("sRGB")
+        }
+        
         return LUTModel(
             url: url,
             title: title,
@@ -98,7 +101,7 @@ struct CUBEUtil: Lookupable {
             cubeData: lutData,
             dimension: Float(dimension),
             range: range,
-            colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!
+            colorSpace: colorSpace
         )
     }
 }

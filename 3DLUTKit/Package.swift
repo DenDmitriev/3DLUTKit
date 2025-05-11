@@ -22,7 +22,9 @@ let package = Package(
             name: "3DLUTKit",
             dependencies: ["Kingfisher"],
             resources: [
-                .process("Resources/Kodachrome 25.cube")
+                .process("Resources/Kodachrome 25.cube"),
+                .process("Resources/ColorCheckerPortrait.jpeg"),
+                .process("Resources/teal_orange_plus_contrast.png")
             ]
         ),
         .testTarget(
