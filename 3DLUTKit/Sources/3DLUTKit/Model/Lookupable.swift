@@ -8,7 +8,7 @@
 import Foundation
 
 protocol Lookupable: Sendable {
-    static func buildLUT(from url: URL) async throws -> LUTModel
+    static func buildLUT(from url: URL) throws -> LUTModel
     static func prettifyFileName(_ fileName: String) -> String
 }
 

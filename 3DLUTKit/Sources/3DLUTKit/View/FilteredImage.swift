@@ -9,12 +9,56 @@ import SwiftUI
 import Kingfisher
 @preconcurrency import CoreImage
 
-public enum FilteredImagePhase {
-    case loading
-    case success(source: UIImage, result: UIImage?)
-    case failure(Error)
-}
-
+/// A SwiftUI view that applies a Core Image filter to an image loaded from a URL or provided as a local `UIImage`.
+///
+/// `FilteredImage` displays an image and applies a specified Core Image filter (e.g., LUT filter from `LUTModel`) to it. The image can be loaded from a remote URL using Kingfisher or provided directly as a `UIImage`. The view handles loading, filtering, and error states, rendering the result through a customizable content closure.
+///
+/// - Parameters:
+///   - url: The URL of the image to load. Use this initializer for remote images.
+///   - image: A local `UIImage` to display and filter. Use this initializer for images already available in the app.
+///   - filter: An optional `CIFilter` to apply to the image (e.g., `CIColorCubeWithColorSpace` for LUTs). If `nil`, the original image is displayed without filtering.
+///   - content: A closure that defines how to render the image based on the current phase (loading, success, or failure).
+///
+/// ### Usage
+/// To display and filter a remote image with a LUT:
+/// ```swift
+/// let url = URL(string: "https://example.com/image.jpg")!
+/// FilteredImage(url: url, filter: LUTModel.previewCube.ciFilter) { phase in
+///     switch phase {
+///     case .loading:
+///         ProgressView()
+///     case .success(let source, let filtered):
+///         VStack {
+///             Image(uiImage: source).resizable().scaledToFit()
+///             if let filtered {
+///                 Image(uiImage: filtered).resizable().scaledToFit()
+///             }
+///         }
+///     case .failure:
+///         Image(systemName: "exclamationmark.triangle")
+///     }
+/// }
+/// ```
+///
+/// To display and filter a local image:
+/// ```swift
+/// let localImage = UIImage(named: "example")!
+/// FilteredImage(image: localImage, filter: LUTModel.previewPng.ciFilter) { phase in
+///     // Same content closure as above
+/// }
+/// ```
+///
+/// ### Phases
+/// The `FilteredImagePhase` enum defines the possible states:
+/// - `loading`: The image is being loaded or filtered.
+/// - `success(source: UIImage, result: UIImage?)`: The image is loaded successfully. `source` is the original image, and `result` is the filtered image (if a filter was applied).
+/// - `failure(Error)`: An error occurred during loading or filtering.
+///
+/// ### Notes
+/// - The view uses `Kingfisher` for asynchronous image loading from URLs.
+/// - Filtering is performed asynchronously to avoid blocking the main thread.
+/// - The `context` parameter is removed as it is now handled internally via `CIContextManager.shared` for thread-safe Core Image operations.
+/// - Ensure that the provided `CIFilter` is compatible with the input image's color space.
 public struct FilteredImage<Content>: View where Content: View {
     enum InputImage {
         case url(URL)

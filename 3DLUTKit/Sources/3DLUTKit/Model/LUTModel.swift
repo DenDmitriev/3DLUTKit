@@ -9,9 +9,54 @@ import Foundation
 import CoreGraphics
 import CoreImage
 
-/// Модель, представляющая 3D LUT (Look-Up Table) для применения цветовых фильтров.
+/// A model representing a 3D Look-Up Table (LUT) for applying color transformations to images.
+///
+/// `LUTModel` encapsulates the data and metadata of a 3D LUT, which is used to map input RGB colors to output RGB colors for color grading or correction. The LUT can be created from a `.cube` file or a `.png` image (palette format). It provides a convenient interface for generating a Core Image filter (`CIColorCubeWithColorSpace`) to apply the LUT to images.
+///
+/// - Parameters:
+///   - url: The URL of the `.cube` or `.png` file from which the LUT is created.
+///   - title: A human-readable name for the LUT, typically derived from the file name or metadata.
+///   - description: Additional information about the LUT, such as comments from a `.cube` file.
+///   - cubeData: The raw data of the LUT in RGBA format, stored as a `Data` object.
+///   - dimension: The size of the LUT cube (e.g., 17 for a 17x17x17 LUT).
+///   - range: An optional range for input values, typically `[0.0, 1.0]` for `.cube` files.
+///   - colorSpace: The `CGColorSpace` used for the LUT, typically sRGB.
+///
+/// ### Properties
+/// - `id`: A unique identifier based on the `url` of the LUT.
+/// - `dataSize`: The expected size of `cubeData` in bytes, calculated as `dimension * dimension * dimension * 4 * sizeof(Float)`.
+/// - `ciFilter`: An optional `CIFilter` (`CIColorCubeWithColorSpace`) configured with the LUT's data, ready to be applied to images.
+///
+/// ### Usage
+/// To create a LUT from a `.cube` file and apply it to an image:
+/// ```swift
+/// let url = Bundle.main.url(forResource: "Kodachrome 25", withExtension: "cube")!
+/// do {
+///     let lut = try LUTModel(url: url)
+///     let filter = lut.ciFilter
+///     // Use filter with FilteredImage or Core Image pipeline
+/// } catch {
+///     print("Failed to create LUT: \(error)")
+/// }
+/// ```
+///
+/// To use a predefined preview LUT:
+/// ```swift
+/// let lut = LUTModel.previewCube
+/// let filter = lut.ciFilter
+/// // Apply filter to an image
+/// ```
+///
+/// ### Supported Formats
+/// - `.cube`: Industry-standard text-based LUT format with metadata and RGB values.
+/// - `.png`: Palette-based LUT images in RGB or RGBA format, where the image dimensions form a cube (e.g., 512x64 for a 64x64x64 LUT).
+///
+/// ### Notes
+/// - The LUT data is stored in RGBA format, with the alpha channel set to `1.0` for all entries.
+/// - The `colorSpace` is currently limited to sRGB. Ensure the input image's color space is compatible.
+/// - Errors during LUT creation (e.g., invalid file format, missing dimension) are thrown as `LUTError`.
+/// - The `previewCube` and `previewPng` properties provide sample LUTs for testing, loaded from the module's bundle.
 public struct LUTModel: Identifiable, Hashable, Sendable {
-    /// URL файла, из которого создан LUT.
     public let url: URL
     public let title: String
     public let description: String
