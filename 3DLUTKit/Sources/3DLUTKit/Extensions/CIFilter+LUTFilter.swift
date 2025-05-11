@@ -8,20 +8,31 @@
 import CoreImage
 
 extension CIFilter {
-    @Sendable
-    static func createLUTFilter(lutModel: LUTModel) throws -> CIFilter {
-        guard lutModel.cubeData.count == lutModel.dataSize else {
-            throw LUTError.invalidDataSize(expected: lutModel.dataSize, actual: lutModel.cubeData.count)
+    convenience public init(lut: LUTModel) throws {
+        guard lut.cubeData.count == lut.dataSize else {
+            throw LUTError.invalidDataSize(expected: lut.dataSize, actual: lut.cubeData.count)
         }
-
+        
+        self.init(name: "CIColorCubeWithColorSpace")!
+        setValue(lut.dimension, forKey: "inputCubeDimension")
+        setValue(lut.cubeData, forKey: "inputCubeData")
+        setValue(lut.colorSpace, forKey: "inputColorSpace")
+    }
+    
+    @Sendable
+    static func createLUTFilter(lut: LUTModel) throws -> CIFilter {
+        guard lut.cubeData.count == lut.dataSize else {
+            throw LUTError.invalidDataSize(expected: lut.dataSize, actual: lut.cubeData.count)
+        }
+        
         guard let colorCubeFilter = CIFilter(name: "CIColorCubeWithColorSpace") else {
             throw LUTError.filterCreationFailed
         }
-
-        colorCubeFilter.setValue(lutModel.dimension, forKey: "inputCubeDimension")
-        colorCubeFilter.setValue(lutModel.cubeData, forKey: "inputCubeData")
-        colorCubeFilter.setValue(lutModel.colorSpace, forKey: "inputColorSpace")
-
+        
+        colorCubeFilter.setValue(lut.dimension, forKey: "inputCubeDimension")
+        colorCubeFilter.setValue(lut.cubeData, forKey: "inputCubeData")
+        colorCubeFilter.setValue(lut.colorSpace, forKey: "inputColorSpace")
+        
         return colorCubeFilter
     }
 }

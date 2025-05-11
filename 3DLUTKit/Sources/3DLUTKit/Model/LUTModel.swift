@@ -23,7 +23,7 @@ public struct LUTModel: Identifiable, Hashable, Sendable {
         Int(dimension * dimension * dimension * 4 * Float(MemoryLayout<Float>.size))
     }
     public var ciFilter: CIFilter? {
-        try? CIFilter.createLUTFilter(lutModel: self)
+        try? CIFilter(lut: self)
     }
 }
 
