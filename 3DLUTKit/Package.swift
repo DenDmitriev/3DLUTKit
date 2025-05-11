@@ -30,7 +30,9 @@ let package = Package(
             dependencies: ["3DLUTKit"],
             resources: [
                 .process("Resources/fuji_eterna_250d_fuji_3510.png"),
-                .process("Resources/Kodachrome 25.cube")
+                .process("Resources/Kodachrome 25.cube"),
+                .process("Resources/ARRI_LogC4-to-Gamma24_Rec709-D65_v1-65.cube"),
+                .process("Resources/Contrast17.cube")
             ]
         ),
     ]

@@ -13,13 +13,14 @@ struct CUBEUtil: Lookupable {
         let data = try Data(contentsOf: url)
         let content = String(data: data, encoding: .utf8) ?? ""
         let lines = content.components(separatedBy: .newlines)
-        var values = [Float]()
         var dimension: Int?
         var title: String = "Unknown"
         var description: String = ""
         var range: ClosedRange<Float>?
+        var firstDataLineIndex = 0 // Индекс первой строки с данными LUT
         
-        for line in lines {
+        // Первый цикл: сбор метаданных
+        for (index, line) in lines.enumerated() {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             
             if trimmed.isEmpty || trimmed.hasPrefix("#") {
@@ -46,17 +47,31 @@ struct CUBEUtil: Lookupable {
                 }
                 continue
             }
+            // Прерываем цикл, если встретили строку с данными LUT
+            if trimmed.split(separator: " ").compactMap({ Float($0) }).count == 3 {
+                firstDataLineIndex = index
+                break
+            }
+        }
+        
+        // Проверяем dimension и выделяем память
+        guard let dimension else {
+            throw LUTError.missingDimension
+        }
+        let expectedSize = dimension * dimension * dimension * 3
+        var values = [Float]()
+        values.reserveCapacity(expectedSize)
+        
+        // Второй цикл: сбор значений LUT
+        for line in lines[firstDataLineIndex...] {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             let components = trimmed.split(separator: " ").compactMap { Float($0) }
             if components.count == 3 {
                 values.append(contentsOf: components)
             }
         }
         
-        guard let dimension else {
-            throw LUTError.missingDimension
-        }
-        
-        let expectedSize = dimension * dimension * dimension * 3
+        // Проверка размера и обрезка
         if values.count < expectedSize {
             throw LUTError.invalidDataSize(expected: expectedSize, actual: values.count)
         }

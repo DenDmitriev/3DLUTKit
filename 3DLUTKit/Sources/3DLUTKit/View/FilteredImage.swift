@@ -73,10 +73,18 @@ public struct FilteredImage<Content>: View where Content: View {
     
     nonisolated private func applyFilter(to image: UIImage, filter: CIFilter) -> UIImage {
         let context = context ?? CIContext()
-        guard let inputImage = CIImage(image: image) else { return image }
+        guard
+            let inputImage = CIImage(image: image)
+        else {
+            return image
+        }
         filter.setValue(inputImage, forKey: kCIInputImageKey)
-        guard let outputImage = filter.outputImage,
-              let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return image }
+        guard
+            let outputImage = filter.outputImage,
+            let cgImage = context.createCGImage(outputImage, from: outputImage.extent)
+        else {
+            return image
+        }
         return UIImage(cgImage: cgImage)
     }
 }
