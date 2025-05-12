@@ -26,17 +26,17 @@ actor LUTCache {
         return nil
     }
     
-    func setLUT(_ lut: LUTModel, for url: URL) {
-        let lutSize = lut.cubeData.count + MemoryLayout<URL>.size + lut.title.utf8.count + lut.description.utf8.count + MemoryLayout<Float>.size * 2
+    func setLUT(_ lut: LUTModel, for url: URL) throws {
+        let lutSize = lut.cubeData.count + MemoryLayout<URL>.size + lut.title.utf8.count + lut.description.utf8.count + MemoryLayout<Float>.size * 2 + MemoryLayout<LUTColorSpace>.size
         
         guard lutSize <= maxSize else {
-            return
+            throw LUTError.invalidDataSize(expected: maxSize, actual: lutSize)
         }
         
         while totalSize + lutSize > maxSize || cache.count >= maxCount, !accessOrder.isEmpty {
             let oldest = accessOrder.removeFirst()
             if let oldLUT = cache.removeValue(forKey: oldest) {
-                let oldSize = oldLUT.cubeData.count + MemoryLayout<URL>.size + oldLUT.title.utf8.count + oldLUT.description.utf8.count + MemoryLayout<Float>.size * 2
+                let oldSize = oldLUT.cubeData.count + MemoryLayout<URL>.size + oldLUT.title.utf8.count + oldLUT.description.utf8.count + MemoryLayout<Float>.size * 2 + MemoryLayout<LUTColorSpace>.size
                 totalSize -= oldSize
             }
         }
@@ -52,4 +52,3 @@ actor LUTCache {
         totalSize = 0
     }
 }
-

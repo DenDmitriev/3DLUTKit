@@ -34,7 +34,7 @@ struct CIFilterTests {
         #expect(cubeData == lutModel.cubeData, "inputCubeData должен соответствовать cubeData из LUTModel")
         
         let colorSpace = try #require(filter.value(forKey: "inputColorSpace"), "inputColorSpace должен быть установлен")
-        #expect(colorSpace as! CGColorSpace == lutModel.colorSpace, "inputColorSpace должен соответствовать colorSpace из LUTModel")
+        #expect(colorSpace as! CGColorSpace == lutModel.colorSpace.cgColorSpace, "inputColorSpace должен соответствовать colorSpace из LUTModel")
         
         // Проверяем, что фильтр готов к использованию
         #expect(filter.inputKeys.contains(kCIInputImageKey), "Фильтр должен поддерживать inputImage")

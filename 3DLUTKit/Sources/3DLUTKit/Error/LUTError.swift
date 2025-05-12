@@ -28,6 +28,7 @@ enum LUTError: LocalizedError {
     case colorSpaceNotSupported(String)
     /// Значение из таблицы не действительно
     case invalidLUTValue(String)
+    case colorSpaceMismatch(expected: String, actual: String)
     
     var errorDescription: String? {
         switch self {
@@ -51,6 +52,8 @@ enum LUTError: LocalizedError {
             return "Color space not supported: \(reason)."
         case .invalidLUTValue(let reason):
             return "Invalid LUT value: \(reason)."
+        case .colorSpaceMismatch(let expected, let actual):
+            return "Color space mismatch. Expected \(expected), but got \(actual)."
         }
     }
 }

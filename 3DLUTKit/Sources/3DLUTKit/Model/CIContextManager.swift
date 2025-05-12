@@ -5,9 +5,7 @@
 //  Created by Denis Dmitriev on 10.05.2025.
 //
 
-import CoreImage
-
-extension CIContext: @unchecked @retroactive Sendable {}
+@preconcurrency import CoreImage
 
 final class CIContextManager: Sendable {
     static let shared = CIContextManager()
