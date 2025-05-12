@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum LUTError: LocalizedError {
+public enum LUTError: LocalizedError {
     /// Файл имеет неподдерживаемый формат (например, неверное расширение).
     case fileNotSupported(String)
     /// Файл не найден по указанному пути.
@@ -30,7 +30,7 @@ enum LUTError: LocalizedError {
     case invalidLUTValue(String)
     case colorSpaceMismatch(expected: String, actual: String)
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .fileNotSupported(let file):
             return "File \(file) is not supported."

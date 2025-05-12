@@ -8,8 +8,8 @@
 import Foundation
 import CoreGraphics
 
-struct CUBEUtil: Lookupable {
-    static func buildLUT(from url: URL) throws -> LUTModel {
+public struct CUBEUtil: Lookupable {
+    public static func buildLUT(from url: URL) throws -> LUTModel {
         let data = try Data(contentsOf: url)
         let content = String(data: data, encoding: .utf8) ?? ""
         let lines = content.components(separatedBy: .newlines)

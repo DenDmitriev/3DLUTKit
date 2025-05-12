@@ -24,7 +24,7 @@ extension CIFilter {
     }
     
     @Sendable
-    static func createLUTFilter(lut: LUTModel) throws -> CIFilter {
+    public static func createLUTFilter(lut: LUTModel) throws -> CIFilter {
         guard lut.cubeData.count == lut.dataSize else {
             throw LUTError.invalidDataSize(expected: lut.dataSize, actual: lut.cubeData.count)
         }

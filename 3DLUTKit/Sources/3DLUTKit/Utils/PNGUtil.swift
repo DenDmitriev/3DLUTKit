@@ -8,8 +8,8 @@
 import CoreImage
 import CoreGraphics
 
-struct PNGUtil: Lookupable {
-    static func buildLUT(from url: URL) throws -> LUTModel {
+public struct PNGUtil: Lookupable {
+    public static func buildLUT(from url: URL) throws -> LUTModel {
         guard let inputImage = CIImage(contentsOf: url) else {
             throw LUTError.invalidImage
         }

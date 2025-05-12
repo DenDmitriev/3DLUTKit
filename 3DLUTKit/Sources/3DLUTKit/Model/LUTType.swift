@@ -11,7 +11,7 @@ public enum LUTType {
     case cube
     case palette
     
-    init?(url: URL) {
+    public init?(url: URL) {
         if url.pathExtension.lowercased() == "cube" {
             self = .cube
         } else if url.pathExtension.lowercased() == "png" {

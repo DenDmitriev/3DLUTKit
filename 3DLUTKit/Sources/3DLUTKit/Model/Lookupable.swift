@@ -13,7 +13,7 @@ protocol Lookupable: Sendable {
 }
 
 extension Lookupable {
-    static func prettifyFileName(_ fileName: String) -> String {
+    public static func prettifyFileName(_ fileName: String) -> String {
         let nameWithoutExtension = fileName.components(separatedBy: ".").first ?? fileName
         let replaced = nameWithoutExtension
             .replacingOccurrences(of: "_", with: " ")

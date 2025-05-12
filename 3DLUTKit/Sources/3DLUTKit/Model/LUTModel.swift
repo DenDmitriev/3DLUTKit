@@ -75,7 +75,8 @@ public struct LUTModel: Identifiable, Hashable, Sendable {
 }
 
 extension LUTModel {
-    init(url: URL) throws {
+    /// Initializes a LUT model synchronously from a file URL without using the cache.
+    public init(url: URL) throws {
         let model = try Self.build(from: url)
         self.url = url
         self.title = model.title
@@ -86,7 +87,31 @@ extension LUTModel {
         self.colorSpace = model.colorSpace
     }
     
-    static func build(from url: URL) throws -> LUTModel {
+    /// Initializes a LUT model asynchronously from a file URL, optionally using the cache.
+    public init(url: URL, useCache: Bool = true) async throws {
+        // Проверяем, есть ли LUT в кэше
+        if useCache, let cachedLUT = await LUTCache.shared.getLUT(for: url) {
+            self = cachedLUT
+            return
+        }
+        
+        // Если нет в кэше, создаем новую модель
+        let model = try Self.build(from: url)
+        self.url = url
+        self.title = model.title
+        self.description = model.description
+        self.cubeData = model.cubeData
+        self.dimension = model.dimension
+        self.range = model.range
+        self.colorSpace = model.colorSpace
+        
+        // Сохраняем в кэш
+        if useCache {
+            try await LUTCache.shared.setLUT(self, for: url)
+        }
+    }
+    
+    public static func build(from url: URL) throws -> LUTModel {
         let type = LUTType(url: url)
         switch type {
         case .cube:

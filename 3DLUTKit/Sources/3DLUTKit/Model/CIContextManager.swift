@@ -7,8 +7,8 @@
 
 @preconcurrency import CoreImage
 
-final class CIContextManager: Sendable {
-    static let shared = CIContextManager()
+final public class CIContextManager: Sendable {
+    public static let shared = CIContextManager()
     private let context: CIContext
     private let queue = DispatchQueue(label: "com.3DLUTKit.CIContextManager", attributes: .concurrent)
 
@@ -16,7 +16,7 @@ final class CIContextManager: Sendable {
         self.context = CIContext(options: [.workingColorSpace: NSNull()])
     }
 
-    func withContext<T>(_ block: (CIContext) throws -> T) rethrows -> T {
+    public func withContext<T>(_ block: (CIContext) throws -> T) rethrows -> T {
         try queue.sync {
             try block(context)
         }

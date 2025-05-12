@@ -8,7 +8,7 @@
 import Foundation
 
 actor LUTCache {
-    static let shared = LUTCache()
+    public static let shared = LUTCache()
     private var cache: [URL: LUTModel] = [:]
     private var accessOrder: [URL] = []
     private var totalSize: Int = 0 // Размер в байтах
@@ -17,7 +17,7 @@ actor LUTCache {
     
     private init() {}
     
-    func getLUT(for url: URL) -> LUTModel? {
+    public func getLUT(for url: URL) -> LUTModel? {
         if let lut = cache[url] {
             accessOrder.removeAll { $0 == url }
             accessOrder.append(url)
@@ -26,7 +26,7 @@ actor LUTCache {
         return nil
     }
     
-    func setLUT(_ lut: LUTModel, for url: URL) throws {
+    public func setLUT(_ lut: LUTModel, for url: URL) throws {
         let lutSize = lut.cubeData.count + MemoryLayout<URL>.size + lut.title.utf8.count + lut.description.utf8.count + MemoryLayout<Float>.size * 2 + MemoryLayout<LUTColorSpace>.size
         
         guard lutSize <= maxSize else {
@@ -46,7 +46,7 @@ actor LUTCache {
         totalSize += lutSize
     }
     
-    func clearCache() {
+    public func clearCache() {
         cache.removeAll()
         accessOrder.removeAll()
         totalSize = 0

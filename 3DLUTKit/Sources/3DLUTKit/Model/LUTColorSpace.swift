@@ -17,7 +17,7 @@ public enum LUTColorSpace: String, CaseIterable, Sendable {
     case displayP3 = "displayP3"
     
     /// Returns the corresponding `CGColorSpace` for the LUT color space.
-    var cgColorSpace: CGColorSpace {
+    public var cgColorSpace: CGColorSpace {
         switch self {
         case .sRGB:
             return CGColorSpace(name: CGColorSpace.sRGB)!
@@ -30,7 +30,7 @@ public enum LUTColorSpace: String, CaseIterable, Sendable {
 extension LUTColorSpace {
     /// Initializes a `LUTColorSpace` from a string identifier.
     /// - Parameter identifier: The string identifier (e.g., "sRGB", "displayP3").
-    init?(identifier: String) {
+    public init?(identifier: String) {
         let normalized = identifier.lowercased()
         if let colorSpace = LUTColorSpace.allCases.first(where: { $0.rawValue.lowercased() == normalized }) {
             self = colorSpace
@@ -39,7 +39,7 @@ extension LUTColorSpace {
         }
     }
     
-    init?(colorSpace: CFString) {
+    public init?(colorSpace: CFString) {
         switch colorSpace {
         case _ where colorSpace == CGColorSpace.sRGB:
             self = .sRGB
