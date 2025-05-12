@@ -17,7 +17,8 @@ struct CUBEUtil: Lookupable {
         var title: String = "Unknown"
         var description: String = ""
         var range: ClosedRange<Float>?
-        var firstDataLineIndex = 0 // Индекс первой строки с данными LUT
+        var colorSpace: LUTColorSpace = .sRGB // Default
+        var firstDataLineIndex = 0
         
         // Первый цикл: сбор метаданных
         for (index, line) in lines.enumerated() {
@@ -40,6 +41,7 @@ struct CUBEUtil: Lookupable {
                 dimension = trimmed.split(separator: " ").last.flatMap { Int($0) }
                 continue
             }
+            
             if trimmed.lowercased().contains("lut_3d_input_range") {
                 let components = trimmed.split(separator: " ").compactMap { Float($0) }
                 if components.count >= 2 {
@@ -47,6 +49,15 @@ struct CUBEUtil: Lookupable {
                 }
                 continue
             }
+            
+            if trimmed.lowercased().hasPrefix("color_space") {
+                let components = trimmed.split(separator: " ")
+                if components.count > 1, let cs = LUTColorSpace(identifier: String(components[1])) {
+                    colorSpace = cs
+                }
+                continue
+            }
+            
             // Прерываем цикл, если встретили строку с данными LUT
             if trimmed.split(separator: " ").compactMap({ Float($0) }).count == 3 {
                 firstDataLineIndex = index
@@ -89,10 +100,6 @@ struct CUBEUtil: Lookupable {
         }
         
         let lutData = Data(bytes: rgbaValues, count: rgbaValues.count * MemoryLayout<Float>.size)
-        
-        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) else {
-            throw LUTError.colorSpaceNotSupported("sRGB")
-        }
         
         return LUTModel(
             url: url,

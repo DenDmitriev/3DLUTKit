@@ -74,6 +74,10 @@ struct PNGUtil: Lookupable {
                     let b = Float(bytes[index + 2]) / 255.0
                     let a = hasAlpha ? Float(bytes[index + 3]) / 255.0 : 1.0
                     
+                    guard [r, g, b, a].allSatisfy({ $0 >= 0.0 && $0 <= 1.0 }) else {
+                        throw LUTError.invalidLUTValue("Pixel values out of range at position (\(red), \(green), \(blue))")
+                    }
+                    
                     floatValues.append(contentsOf: [r, g, b, a])
                 }
             }
@@ -86,8 +90,10 @@ struct PNGUtil: Lookupable {
         
         let lutData = Data(bytes: floatValues, count: floatValues.count * MemoryLayout<Float>.size)
         
-        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) else {
-            throw LUTError.colorSpaceNotSupported("sRGB")
+        // Определяем цветовое пространство
+        var colorSpace: LUTColorSpace?
+        if let cgColorSpace = cgImage.colorSpace, let name = cgColorSpace.name {
+            colorSpace = LUTColorSpace(colorSpace: name)
         }
         
         return LUTModel(
@@ -97,7 +103,7 @@ struct PNGUtil: Lookupable {
             cubeData: lutData,
             dimension: Float(dimension),
             range: nil,
-            colorSpace: colorSpace
+            colorSpace: colorSpace ?? .sRGB
         )
     }
 }

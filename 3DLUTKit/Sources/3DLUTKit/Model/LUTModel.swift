@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import CoreGraphics
-import CoreImage
 
 /// A model representing a 3D Look-Up Table (LUT) for applying color transformations to images.
 ///
@@ -20,7 +18,7 @@ import CoreImage
 ///   - cubeData: The raw data of the LUT in RGBA format, stored as a `Data` object.
 ///   - dimension: The size of the LUT cube (e.g., 17 for a 17x17x17 LUT).
 ///   - range: An optional range for input values, typically `[0.0, 1.0]` for `.cube` files.
-///   - colorSpace: The `CGColorSpace` used for the LUT, typically sRGB.
+///   - colorSpace: The color space used for the LUT, either `sRGB` or `displayP3`.
 ///
 /// ### Properties
 /// - `id`: A unique identifier based on the `url` of the LUT.
@@ -51,11 +49,16 @@ import CoreImage
 /// - `.cube`: Industry-standard text-based LUT format with metadata and RGB values.
 /// - `.png`: Palette-based LUT images in RGB or RGBA format, where the image dimensions form a cube (e.g., 512x64 for a 64x64x64 LUT).
 ///
+/// ### Supported Color Spaces
+/// - `sRGB`: Standard RGB color space, widely used for compatibility.
+/// - `displayP3`: Wide-gamut color space for modern displays, providing richer colors.
+///
 /// ### Notes
 /// - The LUT data is stored in RGBA format, with the alpha channel set to `1.0` for all entries.
-/// - The `colorSpace` is currently limited to sRGB. Ensure the input image's color space is compatible.
+/// - The color space defaults to `sRGB` if not specified in the file metadata or ICC profile.
 /// - Errors during LUT creation (e.g., invalid file format, missing dimension) are thrown as `LUTError`.
 /// - The `previewCube` and `previewPng` properties provide sample LUTs for testing, loaded from the module's bundle.
+/// - Ensure the input image's color space is compatible with the LUT's color space for accurate results.
 public struct LUTModel: Identifiable, Hashable, Sendable {
     public let url: URL
     public let title: String
@@ -63,14 +66,11 @@ public struct LUTModel: Identifiable, Hashable, Sendable {
     public let cubeData: Data
     public let dimension: Float
     public let range: ClosedRange<Float>?
-    public let colorSpace: CGColorSpace
+    public let colorSpace: LUTColorSpace
     
     public var id: String { url.absoluteString }
     public var dataSize: Int {
         Int(dimension * dimension * dimension * 4 * Float(MemoryLayout<Float>.size))
-    }
-    public var ciFilter: CIFilter? {
-        try? CIFilter(lut: self)
     }
 }
 
@@ -104,13 +104,21 @@ public extension LUTModel {
         guard let url = Bundle.module.url(forResource: "Kodachrome 25", withExtension: "cube") else {
             fatalError("Kodachrome 25.cube not found in bundle")
         }
-        return try! .init(url: url)
+        do {
+            return try .init(url: url)
+        } catch {
+            fatalError("Failed to create previewCube: \(error)")
+        }
     }()
     
     static let previewPng: LUTModel = {
         guard let url = Bundle.module.url(forResource: "teal_orange_plus_contrast", withExtension: "png") else {
             fatalError("teal_orange_plus_contrast.png not found in bundle")
         }
-        return try! .init(url: url)
+        do {
+            return try .init(url: url)
+        } catch {
+            fatalError("Failed to create previewPng: \(error)")
+        }
     }()
 }

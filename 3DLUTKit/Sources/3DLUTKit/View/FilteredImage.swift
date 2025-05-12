@@ -11,10 +11,10 @@ import Kingfisher
 
 /// A SwiftUI view that applies a Core Image filter to an image loaded from a URL or provided as a local `UIImage`.
 ///
-/// `FilteredImage` displays an image and applies a specified Core Image filter (e.g., LUT filter from `LUTModel`) to it. The image can be loaded from a remote URL using Kingfisher or provided directly as a `UIImage`. The view handles loading, filtering, and error states, rendering the result through a customizable content closure.
+/// `FilteredImage` displays an image and applies a specified Core Image filter (e.g., a LUT filter from `LUTModel`) to it. The image can be loaded asynchronously from a remote URL using Kingfisher or provided directly as a `UIImage`. The view manages loading, filtering, and error states, rendering the result through a customizable content closure.
 ///
 /// - Parameters:
-///   - url: The URL of the image to load. Use this initializer for remote images.
+///   - url: The URL of the image to load asynchronously. Use this initializer for remote images.
 ///   - image: A local `UIImage` to display and filter. Use this initializer for images already available in the app.
 ///   - filter: An optional `CIFilter` to apply to the image (e.g., `CIColorCubeWithColorSpace` for LUTs). If `nil`, the original image is displayed without filtering.
 ///   - content: A closure that defines how to render the image based on the current phase (loading, success, or failure).
@@ -50,15 +50,17 @@ import Kingfisher
 ///
 /// ### Phases
 /// The `FilteredImagePhase` enum defines the possible states:
-/// - `loading`: The image is being loaded or filtered.
+/// - `loading`: The image is being loaded (for URLs) or filtered.
 /// - `success(source: UIImage, result: UIImage?)`: The image is loaded successfully. `source` is the original image, and `result` is the filtered image (if a filter was applied).
 /// - `failure(Error)`: An error occurred during loading or filtering.
 ///
 /// ### Notes
-/// - The view uses `Kingfisher` for asynchronous image loading from URLs.
-/// - Filtering is performed asynchronously to avoid blocking the main thread.
-/// - The `context` parameter is removed as it is now handled internally via `CIContextManager.shared` for thread-safe Core Image operations.
+/// - Remote images are loaded asynchronously using `Kingfisher`.
+/// - Image filtering is performed asynchronously on a background thread to avoid blocking the main thread.
+/// - Core Image operations are handled by `CIContextManager.shared` for thread-safe processing.
+/// - The input image's color space is converted to match the filter's color space (e.g., sRGB or displayP3 for LUTs) to ensure accurate results.
 /// - Ensure that the provided `CIFilter` is compatible with the input image's color space.
+/// - The view automatically handles errors during image loading or filtering, passing them to the `content` closure.
 public struct FilteredImage<Content>: View where Content: View {
     enum InputImage {
         case url(URL)
@@ -125,15 +127,7 @@ public struct FilteredImage<Content>: View where Content: View {
             switch result {
             case .success(let value):
                 Task { @MainActor in
-                    self.phase = .success(source: value.image, result: nil)
-                    if let filter {
-                        Task(priority: .userInitiated) {
-                            let filteredImage = self.applyFilter(to: value.image, filter: filter)
-                            Task { @MainActor in
-                                self.phase = .success(source: value.image, result: filteredImage)
-                            }
-                        }
-                    }
+                    loadImage(image: value.image)
                 }
             case .failure(let error):
                 Task { @MainActor in

@@ -21,7 +21,7 @@ struct LUTCacheTests {
             cubeData: cubeData,
             dimension: dimension,
             range: 0...1,
-            colorSpace: CGColorSpaceCreateDeviceRGB()
+            colorSpace: .sRGB
         )
     }
     
@@ -35,7 +35,7 @@ struct LUTCacheTests {
         #expect(result == nil, "Cache should return nil for non-existent LUT")
         
         // Добавляем LUT и проверяем получение
-        await cache.setLUT(lut, for: url)
+        try await cache.setLUT(lut, for: url)
         let cachedLUT = await cache.getLUT(for: url)
         #expect(cachedLUT != nil, "Cache should return the stored LUT")
         #expect(cachedLUT?.title == lut.title, "Cached LUT title should match")
@@ -49,12 +49,12 @@ struct LUTCacheTests {
         let lut2 = createTestLUTModel(url: url2, title: "LUT2")
         
         // Добавляем два LUT
-        await cache.setLUT(lut1, for: url1)
-        await cache.setLUT(lut2, for: url2)
+        try await cache.setLUT(lut1, for: url1)
+        try await cache.setLUT(lut2, for: url2)
         
         // Проверяем, что получение LUT1 обновляет порядок доступа
         let _ = await cache.getLUT(for: url1)
-        await cache.setLUT(lut1, for: url1) // Повторное добавление
+        try await cache.setLUT(lut1, for: url1) // Повторное добавление
         let cachedLUT = await cache.getLUT(for: url1)
         #expect(cachedLUT?.title == "LUT1", "LUT1 should still be accessible")
     }
@@ -67,7 +67,7 @@ struct LUTCacheTests {
         for i in 0...maxCount {
             let url = URL(fileURLWithPath: "/test/lut\(i).cube")
             let lut = createTestLUTModel(url: url, title: "LUT\(i)", cubeDataSize: 100)
-            await cache.setLUT(lut, for: url)
+            try await cache.setLUT(lut, for: url)
         }
         
         // Проверяем, что первый LUT удален
@@ -88,9 +88,9 @@ struct LUTCacheTests {
         let lut2 = createTestLUTModel(url: url2, title: "LargeLUT2", cubeDataSize: largeSize)
         
         // Добавляем первый LUT
-        await cache.setLUT(lut1, for: url1)
+        try await cache.setLUT(lut1, for: url1)
         // Добавляем второй LUT, что превысит maxSize (50 МБ)
-        await cache.setLUT(lut2, for: url2)
+        try? await cache.setLUT(lut2, for: url2)
         
         // Проверяем, что первый LUT удален
         let cachedLUT1 = await cache.getLUT(for: url1)
@@ -107,7 +107,7 @@ struct LUTCacheTests {
         let lut = createTestLUTModel(url: url)
         
         // Добавляем LUT
-        await cache.setLUT(lut, for: url)
+        try await cache.setLUT(lut, for: url)
         let cachedLUT = await cache.getLUT(for: url)
         #expect(cachedLUT != nil, "LUT should be available before clearing")
         
@@ -129,7 +129,7 @@ struct LUTCacheTests {
         let lut = try LUTModel(url: cubeURL)
         
         // Добавляем в кэш
-        await cache.setLUT(lut, for: cubeURL)
+        try await cache.setLUT(lut, for: cubeURL)
         
         // Проверяем, что LUT доступен
         let cachedLUT = await cache.getLUT(for: cubeURL)

@@ -20,7 +20,7 @@ extension CIFilter {
         self.init(name: "CIColorCubeWithColorSpace")!
         setValue(lut.dimension, forKey: "inputCubeDimension")
         setValue(lut.cubeData, forKey: "inputCubeData")
-        setValue(lut.colorSpace, forKey: "inputColorSpace")
+        setValue(lut.colorSpace.cgColorSpace, forKey: "inputColorSpace")
     }
     
     @Sendable
@@ -35,7 +35,7 @@ extension CIFilter {
         
         colorCubeFilter.setValue(lut.dimension, forKey: "inputCubeDimension")
         colorCubeFilter.setValue(lut.cubeData, forKey: "inputCubeData")
-        colorCubeFilter.setValue(lut.colorSpace, forKey: "inputColorSpace")
+        colorCubeFilter.setValue(lut.colorSpace.cgColorSpace, forKey: "inputColorSpace")
         
         return colorCubeFilter
     }
